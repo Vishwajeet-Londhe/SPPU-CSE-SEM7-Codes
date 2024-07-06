@@ -1,1 +1,1 @@
-# SPPU-CSE-SEM57-Codes
+# SPPU-CSE-SEM7-Codes
