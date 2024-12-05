@@ -9,7 +9,6 @@
 **Join our Telegram channel [here!](https://t.me/SPPU_TE_BE_COMP)**
 
 All BE Codes of following subjects available with notes
-
 LP-3 ( DAA, ML, BT )
 LP-4 ( CSDF, IR, MC )
 
