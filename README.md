@@ -14,7 +14,7 @@ LP-4 ( CSDF, IR, MC )
 
 <hr/>
 
-![Image](https://github.com/user-attachments/assets/f72ab2ae-4c76-4ffc-989b-5e5e892bcbfd)
+![Image](https://github.com/user-attachments/assets/3c77d01e-0e5b-4bcd-8bcf-6410aec6840c)
 
 <hr/>
 
