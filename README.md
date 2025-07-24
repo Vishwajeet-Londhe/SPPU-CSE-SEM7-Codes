@@ -8,14 +8,14 @@
 
 **Join our Telegram channel [here!](https://t.me/SPPU_TE_BE_COMP)**
 
-All BE Codes of following subjects available with notes <br/>
-LP-3 ( DAA, ML, BT ) <br/>
+All BE Codes of following subjects available with notes  
+LP-3 ( DAA, ML, BT )  
 LP-4 ( CSDF, IR, MC )
 
-<hr>
-<p align='center'>
-  <img width="50%" src="https://github.com/user-attachments/assets/f72ab2ae-4c76-4ffc-989b-5e5e892bcbfd/photo_2025-07-24_18-22-24.jpg" />
-</p>
-<hr>
+<hr/>
 
-> Click :star: if you like the repo. Pull Requests are highly appreciated.
+![Image](https://github.com/user-attachments/assets/f72ab2ae-4c76-4ffc-989b-5e5e892bcbfd)
+
+<hr/>
+
+> ⭐ Click :star: if you like the repo. Pull Requests are highly appreciated.
