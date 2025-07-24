@@ -13,9 +13,9 @@ LP-3 ( DAA, ML, BT )
 LP-4 ( CSDF, IR, MC )
 
 <hr/>
-
-![Image](https://github.com/user-attachments/assets/3c77d01e-0e5b-4bcd-8bcf-6410aec6840c)
-
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/3c77d01e-0e5b-4bcd-8bcf-6410aec6840c" width="50%" />
+</p>
 <hr/>
 
 > ⭐ Click :star: if you like the repo. Pull Requests are highly appreciated.
