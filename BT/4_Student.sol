@@ -1,33 +1,58 @@
-// SPDX-License-Identifier: MIT
-pragma solidity >= 0.7.0;
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity >=0.8.0;
 
-contract Student_management{
+contract StudentData {
 
-	struct Student{
-		int stud_id;
-		string Name;
-		string Department;
-	}
+    // Structure to store student information
+    struct Student {
+        uint256 id;
+        string name;
+        uint8 age;
+        string course;
+    }
 
-	Student[] Students;
+    // Array to store multiple students
+    Student[] public students;
 
-	function add_stud(int stud_id, string memory Name, string memory Department) public{
-		Student memory stud = Student(stud_id, Name, Department);
-		Students.push(stud);
-	}
+    // Event for logging
+    event StudentAdded(uint256 id, string name);
 
-	function getStudent(int stud_id) public view returns(string memory, string memory){
-		for(uint i = 0; i < Students.length; i++){
-			Student memory stud = Students[i];
-			if(stud.stud_id == stud_id){
-				return(stud.Name, stud.Department);
-			}
-		}
-        return("Name Not Found", "Department Not Found");
-	}
+    // Function to add a new student
+    function addStudent(uint256 _id, string memory _name, uint8 _age, string memory _course) public {
+        Student memory newStudent = Student({
+            id: _id,
+            name: _name,
+            age: _age,
+            course: _course
+        });
 
-	//Fallback Function
-	fallback() external payable{
-		Students.push(Student(7, "XYZ", "Mechanical"));
-	}
+        students.push(newStudent);
+        emit StudentAdded(_id, _name);
+    }
+
+    // Function to get total number of students
+    function getStudentCount() public view returns (uint256) {
+        return students.length;
+    }
+
+    // Function to get a student by index
+    function getStudent(uint256 index) public view returns (uint256, string memory, uint8, string memory) {
+        require(index < students.length, "Invalid index");
+        Student storage s = students[index];
+        return (s.id, s.name, s.age, s.course);
+    }
+
+    // Fallback function to accept ether
+    fallback() external payable {
+        // Do nothing, just accept ETH
+    }
+
+    receive() external payable {
+        // Optional: handle plain ETH transfers
+    }
+
+    // Function to get contract balance
+    function getContractBalance() public view returns (uint256) {
+        return address(this).balance;
+    }
 }
