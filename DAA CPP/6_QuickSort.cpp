@@ -1,58 +1,63 @@
-#include<iostream>
-
+#include <iostream>
+#include <cstdlib>
+#include <ctime>
 using namespace std;
 
-int partition(int * arr, int p, int r){
-	int x = arr[r];
-	int i = p - 1;
-	for(int j = p; j < r; j++){
-		if(arr[j] <= x){
-			i++;
-			swap(arr[i],arr[j]);
-		}
-	}
-	swap(arr[i + 1], arr[r]);
-	return i + 1;
+long long detSteps = 0, randSteps = 0;
+
+int partition(int arr[], int low, int high, long long &steps) {
+    int pivot = arr[high], i = low - 1;
+    for (int j = low; j < high; j++) {
+        steps++; // counting comparison
+        if (arr[j] <= pivot) swap(arr[++i], arr[j]);
+    }
+    swap(arr[i + 1], arr[high]);
+    return i + 1;
 }
 
-void quickSort(int * arr, int p, int r){
-	if (p < r){
-		int q = partition(arr, p, r);
-		quickSort(arr, p, q - 1);
-		quickSort(arr, q + 1, r);
-	}
+int randomPartition(int arr[], int low, int high, long long &steps) {
+    int randIndex = low + rand() % (high - low + 1);
+    swap(arr[randIndex], arr[high]); // random pivot
+    return partition(arr, low, high, steps);
 }
 
-//Randomized
-int randomPartition(int * arr, int p, int r){
-	int x = arr[r];
-	int i = rand() % ((r - p) + 1) + p;
-	cout << i << endl;
-	for(int j = p; j < r; j++){
-		if(arr[j] <= x){
-			i++;
-			swap(arr[i],arr[j]);
-		}
-	}
-	swap(arr[i + 1], arr[r]);
-	return i + 1;
+void quickSortDet(int arr[], int low, int high) {
+    if (low < high) {
+        int pi = partition(arr, low, high, detSteps);
+        quickSortDet(arr, low, pi - 1);
+        quickSortDet(arr, pi + 1, high);
+    }
 }
 
-void radomizedQuickSort(int * arr, int p, int r){
-	if (p < r){
-		int q = randomPartition(arr, p, r);
-		radomizedQuickSort(arr, p, q - 1);
-		radomizedQuickSort(arr, q + 1, r);
-	}
+void quickSortRand(int arr[], int low, int high) {
+    if (low < high) {
+        int pi = randomPartition(arr, low, high, randSteps);
+        quickSortRand(arr, low, pi - 1);
+        quickSortRand(arr, pi + 1, high);
+    }
 }
 
-int main(){
-	int A[] = {23,34,54,123,34,56,67676,112};
-	int n = sizeof(A)/ sizeof(A[0]);
-	radomizedQuickSort(A, 0, n - 1);
-	for(int i : A){
-		cout << i << " ";
-	}
-	cout << '\n';
-	return 0;
+int main() {
+    srand(time(0));
+    int n;
+    cout << "Enter number of elements: ";
+    cin >> n;
+    int arr1[n], arr2[n];
+    cout << "Enter elements: ";
+    for (int i = 0; i < n; i++) cin >> arr1[i], arr2[i] = arr1[i];
+
+    quickSortDet(arr1, 0, n - 1);
+    quickSortRand(arr2, 0, n - 1);
+
+    cout << "\nDeterministic QuickSort: ";
+    for (int x : arr1) cout << x << " ";
+    cout << "\nSteps (approx comparisons): " << detSteps;
+
+    cout << "\n\nRandomized QuickSort: ";
+    for (int x : arr2) cout << x << " ";
+    cout << "\nSteps (approx comparisons): " << randSteps << "\n";
 }
+
+//Input
+// Enter number of elements: 6
+// Enter elements: 10 7 8 9 1 5

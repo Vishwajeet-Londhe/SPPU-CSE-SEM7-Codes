@@ -1,40 +1,51 @@
-#include<iostream>
-
+#include <iostream>
+#include <vector>
 using namespace std;
 
-int main(){
-    int capacity = 10;
-    int items = 4;
-    int price[items + 1] = {0, 3, 7, 2, 9};
-    int wt[items + 1] = {0, 2, 2, 4, 5};
-    int dp[items + 1][capacity + 1];
-    
-    for(int i = 0; i <= items; i++){
-        for(int j = 0; j <= capacity; j++){
-            if(i == 0 || j == 0){
-                //There's nothing to add to Knapsack
-                dp[i][j] = 0;
-            }
-            else if(wt[i] <= j){
-                //Choose previously maximum or value of current item + value of remaining weight
-                dp[i][j] = max(dp[i - 1][j], price[i] + dp[i - 1][j - wt[i]]);
-            }
-            else{
-                //Add previously added item to knapsack
-                dp[i][j] = dp[i - 1][j];
-            }
+int knapsack(int W, vector<int> &wt, vector<int> &val, int n) {
+    // Create DP table
+    vector<vector<int>> dp(n + 1, vector<int>(W + 1, 0));
+
+    // Build table dp[][] in bottom-up manner
+    for (int i = 0; i <= n; i++) {
+        for (int w = 0; w <= W; w++) {
+            if (i == 0 || w == 0)
+                dp[i][w] = 0;  // Base case
+            else if (wt[i - 1] <= w)
+                dp[i][w] = max(val[i - 1] + dp[i - 1][w - wt[i - 1]], dp[i - 1][w]);
+            else
+                dp[i][w] = dp[i - 1][w];
         }
     }
-	
 
-    cout << "Maximum Profit Earned: " << dp[items][capacity] << "\n";
+    // dp[n][W] contains the maximum value
+    return dp[n][W];
+}
+
+int main() {
+    int n, W;
+    cout << "Enter number of items: ";
+    cin >> n;
+
+    vector<int> val(n), wt(n);
+    cout << "Enter value and weight of each item:\n";
+    for (int i = 0; i < n; i++)
+        cin >> val[i] >> wt[i];
+
+    cout << "Enter capacity of knapsack: ";
+    cin >> W;
+
+    int maxValue = knapsack(W, wt, val, n);
+    cout << "Maximum value in 0-1 Knapsack = " << maxValue << endl;
+
     return 0;
 }
 
-/*
-0/1 Knapsack :
-Time Complexity: O(N*W). 
-where ‘N’ is the number of weight element and ‘W’ is capacity. As for every weight element we traverse through all weight capacities 1<=w<=W.
-Auxiliary Space: O(N*W). 
-The use of 2-D array of size ‘N*W’.
-*/
+// Input
+
+// Number of items: 3
+// Values & weights:
+// 60 10
+// 100 20
+// 120 30
+// Knapsack capacity: 50

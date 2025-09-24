@@ -1,98 +1,84 @@
 #include <iostream>
-#include <vector>
 #include <queue>
-#include <chrono>
-#include <map>
-#include <bitset>
-#include <cmath>
-
+#include <unordered_map>
+#include <vector>
 using namespace std;
 
-class Node {
-public:
-int freq;
-char symbol;
-Node* left;
-Node* right;
-char huff;
+// Node structure for Huffman Tree
+struct Node {
+    char ch;
+    int freq;
+    Node *left, *right;
 
-Node(int freq, char symbol, Node* left = nullptr, Node* right = nullptr)
-: freq(freq), symbol(symbol), left(left), right(right), huff(0) {}
-
-bool operator<(const Node& other) const {
-return freq > other.freq;
-
-}
+    Node(char c, int f) : ch(c), freq(f), left(nullptr), right(nullptr) {}
 };
 
-void printNodes(const Node* node, string val = "") {
-if (node->left) {
-printNodes(node->left, val + '0');
-}
-if (node->right) {
-printNodes(node->right, val + '1');
-}
-if (!node->left && !node->right) {
-cout << node->symbol << " -> " << val << endl;
-}
-}
+// Comparator for priority queue (min-heap)
+struct Compare {
+    bool operator()(Node* l, Node* r) {
+        return l->freq > r->freq;  // Min-heap based on frequency
+    }
+};
 
-void calculateHuffmanCodes(const Node* node, const string& code, map<char,
-string>& huffmanCodes) {
-if (node) {
-if (!node->left && !node->right) {
-huffmanCodes[node->symbol] = code;
-}
-calculateHuffmanCodes(node->left, code + "0", huffmanCodes);
-calculateHuffmanCodes(node->right, code + "1", huffmanCodes);
-}
+// Recursive function to generate Huffman Codes
+void generateCodes(Node* root, string str, unordered_map<char, string>& huffmanCode) {
+    if (!root)
+        return;
+
+    // Leaf node contains character
+    if (!root->left && !root->right) {
+        huffmanCode[root->ch] = str;
+    }
+
+    generateCodes(root->left, str + "0", huffmanCode);
+    generateCodes(root->right, str + "1", huffmanCode);
 }
 
 int main() {
-vector<char> chars = {'a', 'b', 'c', 'd', 'e', 'f'};
+    string text;
+    cout << "Enter the string to encode: ";
+    getline(cin, text);
 
-vector<int> freq = {5, 9, 12, 13, 16, 45};
+    // Count frequency of each character
+    unordered_map<char, int> freq;
+    for (char ch : text)
+        freq[ch]++;
 
-priority_queue<Node> nodes;
+    // Create a priority queue (min-heap) of nodes
+    priority_queue<Node*, vector<Node*>, Compare> pq;
 
-for (size_t i = 0; i < chars.size(); ++i) {
-nodes.push(Node(freq[i], chars[i]));
-}
+    for (auto pair : freq) {
+        pq.push(new Node(pair.first, pair.second));
+    }
 
-auto start_time = chrono::high_resolution_clock::now();
+    // Build Huffman Tree
+    while (pq.size() != 1) {
+        Node* left = pq.top(); pq.pop();
+        Node* right = pq.top(); pq.pop();
 
-while (nodes.size() > 1) {
-Node* left = new Node(nodes.top());
-nodes.pop();
-Node* right = new Node(nodes.top());
-nodes.pop();
+        Node* sum = new Node('\0', left->freq + right->freq);
+        sum->left = left;
+        sum->right = right;
+        pq.push(sum);
+    }
 
-left->huff = '0';
-right->huff = '1';
+    Node* root = pq.top();
 
-Node* newNode = new Node(left->freq + right->freq, left->symbol +
-right->symbol, left, right);
-nodes.push(*newNode);
-}
+    // Generate Huffman Codes
+    unordered_map<char, string> huffmanCode;
+    generateCodes(root, "", huffmanCode);
 
-auto end_time = chrono::high_resolution_clock::now();
-auto duration = chrono::duration_cast<chrono::microseconds>(end_time -
-start_time);
+    // Print Huffman Codes
+    cout << "\nHuffman Codes:\n";
+    for (auto pair : huffmanCode)
+        cout << pair.first << " : " << pair.second << "\n";
 
-cout << "Huffman Tree Construction Elapsed Time: " << duration.count() <<
-" microseconds" << endl;
+    // Encode the input string
+    string encoded = "";
+    for (char ch : text)
+        encoded += huffmanCode[ch];
 
-map<char, string> huffmanCodes;
-calculateHuffmanCodes(&nodes.top(), "", huffmanCodes);
+    cout << "\nEncoded string:\n" << encoded << endl;
 
-// Calculate space used for the Huffman codes
-double spaceUsed = 0;
-for (const auto& kv : huffmanCodes) {
-spaceUsed += kv.first * kv.second.length();
-}
-spaceUsed = ceil(spaceUsed / 8); // Convert bits to bytes
-
-cout << "Estimated Space Used for Huffman Codes: " << spaceUsed << "bytes" << endl;
-
-return 0;
+    return 0;
 }
