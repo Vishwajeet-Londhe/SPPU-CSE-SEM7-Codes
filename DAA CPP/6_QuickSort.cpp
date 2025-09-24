@@ -59,5 +59,6 @@ int main() {
 }
 
 //Input
+
 // Enter number of elements: 6
 // Enter elements: 10 7 8 9 1 5
