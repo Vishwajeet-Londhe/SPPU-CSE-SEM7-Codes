@@ -33,7 +33,7 @@ def knapsack_dp():
 if __name__ == "__main__":
     knapsack_dp()
 
-output:
+# output:
 
 # Enter number of items: 3
 # Enter weight and value (profit) for each item separated by space:
