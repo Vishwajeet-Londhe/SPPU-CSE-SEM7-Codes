@@ -33,7 +33,7 @@ def fractional_knapsack():
             print(f"  Took {capacity} weight fraction of item (weight={weight}, value={value})")
             capacity = 0
 
-    print(f"\n💰 Maximum value in knapsack = {res:.2f}")
+    print(f"\n Maximum value in knapsack = {res:.2f}")
 
 
 if __name__ == "__main__":

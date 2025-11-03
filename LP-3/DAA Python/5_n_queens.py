@@ -1,37 +1,39 @@
-def n_queens(n):
-    col = set()
-    posDiag=set() # (r+c)
-    negDiag=set() # (r-c)
+def print_board(board):
+    for row in board:
+        print(" ".join(str(x) for x in row))
+    print()
 
-    res=[]
+def is_safe(board, row, col, n):
+    for i in range(row):
+        if board[i][col] == 1 or \
+           (col - row + i >= 0 and board[i][col - row + i] == 1) or \
+           (col + row - i < n and board[i][col + row - i] == 1):
+            return False
+    return True
 
-    board = [["0"]*n for i in range(n) ]
-    def backtrack(r):
-        if r==n:
-            copy = [" ".join(row) for row in board]
-            res.append(copy)
-            return
+def solve(board, row, n):
+    if row == n:
+        print_board(board)
+        return
+    for col in range(n):
+        if is_safe(board, row, col, n):
+            board[row][col] = 1
+            solve(board, row + 1, n)
+            board[row][col] = 0
 
-        for c in range(n):
-            if c in col or (r+c) in posDiag or (r-c) in negDiag:
-                continue
+def n_queens():
+    n = int(input("Enter N: "))
+    board = [[0]*n for _ in range(n)]
+    r, c = map(int, input("Enter first queen position (row col): ").split())
+    board[r-1][c-1] = 1
+    print("\nInitial board:")
+    print_board(board)
+    print("Solutions:\n")
+    solve(board, 0, n)
 
-            col.add(c)
-            posDiag.add(r+c)
-            negDiag.add(r-c)
-            board[r][c]="1"
+if __name__ == "__main__":
+    n_queens()
 
-            backtrack(r+1)
-
-            col.remove(c)
-            posDiag.remove(r+c)
-            negDiag.remove(r-c)
-            board[r][c]="0"
-    backtrack(0)
-    for sol in res:
-        for row in sol:
-            print(row)
-        print()
-    
-if __name__=="__main__":
-    n_queens(8)
+# Output:
+# Enter N: 4
+# Enter first queen position (row col): 1 2

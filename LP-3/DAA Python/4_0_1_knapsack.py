@@ -27,8 +27,20 @@ def knapsack_dp():
                 dp[i][w] = dp[i - 1][w]
 
     # Step 4: Output result
-    print("\n💰 Maximum profit that can be obtained:", dp[n][W])
+    print("\n Maximum profit that can be obtained:", dp[n][W])
 
 
 if __name__ == "__main__":
     knapsack_dp()
+
+output:
+
+# Enter number of items: 3
+# Enter weight and value (profit) for each item separated by space:
+# Item 1: 10 60
+# Item 2: 20 110
+# Item 3: 30 150
+
+# Enter maximum capacity of knapsack: 50
+
+#  Maximum profit that can be obtained: 260
