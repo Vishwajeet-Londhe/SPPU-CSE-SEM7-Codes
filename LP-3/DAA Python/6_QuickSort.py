@@ -1,64 +1,53 @@
-#include <iostream>
-#include <cstdlib>
-#include <ctime>
-using namespace std;
+import random
 
-long long detSteps = 0, randSteps = 0;
+# Global step counters
+det_steps = 0
+rand_steps = 0
 
-int partition(int arr[], int low, int high, long long &steps) {
-    int pivot = arr[high], i = low - 1;
-    for (int j = low; j < high; j++) {
-        steps++; // counting comparison
-        if (arr[j] <= pivot) swap(arr[++i], arr[j]);
-    }
-    swap(arr[i + 1], arr[high]);
-    return i + 1;
-}
+def partition(arr, low, high, steps_counter):
+    steps = 0
+    pivot = arr[high]
+    i = low - 1
+    for j in range(low, high):
+        steps += 1  # comparison
+        if arr[j] <= pivot:
+            i += 1
+            arr[i], arr[j] = arr[j], arr[i]
+    arr[i + 1], arr[high] = arr[high], arr[i + 1]
+    steps_counter[0] += steps
+    return i + 1
 
-int randomPartition(int arr[], int low, int high, long long &steps) {
-    int randIndex = low + rand() % (high - low + 1);
-    swap(arr[randIndex], arr[high]); // random pivot
-    return partition(arr, low, high, steps);
-}
+def random_partition(arr, low, high, steps_counter):
+    rand_index = random.randint(low, high)
+    arr[rand_index], arr[high] = arr[high], arr[rand_index]  # random pivot
+    return partition(arr, low, high, steps_counter)
 
-void quickSortDet(int arr[], int low, int high) {
-    if (low < high) {
-        int pi = partition(arr, low, high, detSteps);
-        quickSortDet(arr, low, pi - 1);
-        quickSortDet(arr, pi + 1, high);
-    }
-}
+def quick_sort_det(arr, low, high, steps_counter):
+    if low < high:
+        pi = partition(arr, low, high, steps_counter)
+        quick_sort_det(arr, low, pi - 1, steps_counter)
+        quick_sort_det(arr, pi + 1, high, steps_counter)
 
-void quickSortRand(int arr[], int low, int high) {
-    if (low < high) {
-        int pi = randomPartition(arr, low, high, randSteps);
-        quickSortRand(arr, low, pi - 1);
-        quickSortRand(arr, pi + 1, high);
-    }
-}
+def quick_sort_rand(arr, low, high, steps_counter):
+    if low < high:
+        pi = random_partition(arr, low, high, steps_counter)
+        quick_sort_rand(arr, low, pi - 1, steps_counter)
+        quick_sort_rand(arr, pi + 1, high, steps_counter)
 
-int main() {
-    srand(time(0));
-    int n;
-    cout << "Enter number of elements: ";
-    cin >> n;
-    int arr1[n], arr2[n];
-    cout << "Enter elements: ";
-    for (int i = 0; i < n; i++) cin >> arr1[i], arr2[i] = arr1[i];
+# --- Main program ---
+if __name__ == "__main__":
+    n = int(input("Enter number of elements: "))
+    arr1 = list(map(int, input("Enter elements: ").split()))
+    arr2 = arr1.copy()
 
-    quickSortDet(arr1, 0, n - 1);
-    quickSortRand(arr2, 0, n - 1);
+    det_counter = [0]
+    rand_counter = [0]
 
-    cout << "\nDeterministic QuickSort: ";
-    for (int x : arr1) cout << x << " ";
-    cout << "\nSteps (approx comparisons): " << detSteps;
+    quick_sort_det(arr1, 0, n - 1, det_counter)
+    quick_sort_rand(arr2, 0, n - 1, rand_counter)
 
-    cout << "\n\nRandomized QuickSort: ";
-    for (int x : arr2) cout << x << " ";
-    cout << "\nSteps (approx comparisons): " << randSteps << "\n";
-}
+    print("\nDeterministic QuickSort:", *arr1)
+    print("Steps (approx comparisons):", det_counter[0])
 
-//Input
-
-// Enter number of elements: 6
-// Enter elements: 10 7 8 9 1 5
+    print("\nRandomized QuickSort:", *arr2)
+    print("Steps (approx comparisons):", rand_counter[0])
