@@ -1,19 +1,48 @@
 def fractional_knapsack():
-    weights=[10,20,30]
-    values=[60,100,120]
-    capacity=50
-    res=0
-    # Pair : [Weight,value]
-    for pair in sorted(zip(weights,values), key= lambda x: x[1]/x[0], reverse=True):
-        if capacity<=0: # Capacity completed - Bag fully filled 
-            break 
-        if pair[0]>capacity: # Current's weight with highest value/weight ratio Available Capacity
-            res+=int(capacity * (pair[1]/pair[0]))  # Completely fill the bag
-            capacity=0
-        elif pair[0]<=capacity: # Take the whole object
-            res+=pair[1]
-            capacity-=pair[0]
-    print(res)        
+    # Step 1: Take number of items
+    n = int(input("Enter number of items: "))
 
-if __name__=="__main__":
+    weights = []
+    values = []
+
+    # Step 2: Take weight and value together on same line
+    print("\nEnter weight and value for each item (separated by space):")
+    for i in range(n):
+        w, v = map(float, input(f"Item {i+1}: ").split())
+        weights.append(w)
+        values.append(v)
+
+    # Step 3: Take knapsack capacity
+    capacity = float(input("\nEnter knapsack capacity: "))
+
+    # Step 4: Fractional knapsack logic
+    res = 0.0
+    items = sorted(zip(weights, values), key=lambda x: x[1] / x[0], reverse=True)
+
+    print("\nItem selection process:")
+    for weight, value in items:
+        if capacity <= 0:
+            break
+
+        if weight <= capacity:
+            res += value
+            capacity -= weight
+            print(f"  Took full item (weight={weight}, value={value})")
+        else:
+            res += capacity * (value / weight)
+            print(f"  Took {capacity} weight fraction of item (weight={weight}, value={value})")
+            capacity = 0
+
+    print(f"\n💰 Maximum value in knapsack = {res:.2f}")
+
+
+if __name__ == "__main__":
     fractional_knapsack()
+
+# Output:
+# Enter weight and value for each item (separated by space):
+# Item 1: 10 60
+# Item 2: 20 100
+# Item 3: 30 120
+
+# Enter knapsack capacity: 50
