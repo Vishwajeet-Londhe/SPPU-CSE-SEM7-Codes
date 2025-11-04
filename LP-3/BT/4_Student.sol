@@ -1,58 +1,102 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity >=0.8.0;
+pragma solidity ^0.8.19;
 
-contract StudentData {
-
-    // Structure to store student information
+contract StudentRecords {
+    // student structure
     struct Student {
         uint256 id;
         string name;
         uint8 age;
         string course;
+        bool exists;
     }
 
-    // Array to store multiple students
-    Student[] public students;
+    Student[] private students;                    // dynamic array of students
+    mapping(uint256 => uint256) private indexOf;   // id -> index in students array (1-based)
+    address public owner;
 
-    // Event for logging
-    event StudentAdded(uint256 id, string name);
+    event StudentAdded(uint256 indexed id, string name);
+    event StudentUpdated(uint256 indexed id);
+    event StudentRemoved(uint256 indexed id);
+    event Received(address indexed from, uint256 amount);
+    event FallbackCalled(address indexed from, uint256 amount, bytes data);
 
-    // Function to add a new student
-    function addStudent(uint256 _id, string memory _name, uint8 _age, string memory _course) public {
-        Student memory newStudent = Student({
-            id: _id,
-            name: _name,
-            age: _age,
-            course: _course
-        });
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Only owner");
+        _;
+    }
 
-        students.push(newStudent);
+    constructor() {
+        owner = msg.sender;
+        students.push(Student(0,"",0,"",false)); // sentinel to make index 1-based
+    }
+
+    // add student
+    function addStudent(uint256 _id, string calldata _name, uint8 _age, string calldata _course) external onlyOwner {
+        require(_id != 0, "Invalid id");
+        require(!studentsExists(_id), "Already exists");
+        students.push(Student(_id, _name, _age, _course, true));
+        indexOf[_id] = students.length - 1;
         emit StudentAdded(_id, _name);
     }
 
-    // Function to get total number of students
-    function getStudentCount() public view returns (uint256) {
-        return students.length;
+    // update student
+    function updateStudent(uint256 _id, string calldata _name, uint8 _age, string calldata _course) external onlyOwner {
+        require(studentsExists(_id), "Not found");
+        uint256 idx = indexOf[_id];
+        Student storage s = students[idx];
+        s.name = _name;
+        s.age = _age;
+        s.course = _course;
+        emit StudentUpdated(_id);
     }
 
-    // Function to get a student by index
-    function getStudent(uint256 index) public view returns (uint256, string memory, uint8, string memory) {
-        require(index < students.length, "Invalid index");
-        Student storage s = students[index];
+    // remove student (keeps array compact by swapping with last)
+    function removeStudent(uint256 _id) external onlyOwner {
+        require(studentsExists(_id), "Not found");
+        uint256 idx = indexOf[_id];
+        uint256 lastIdx = students.length - 1;
+        if (idx != lastIdx) {
+            // move last into idx
+            Student storage last = students[lastIdx];
+            students[idx] = last;
+            indexOf[last.id] = idx;
+        }
+        students.pop();
+        delete indexOf[_id];
+        emit StudentRemoved(_id);
+    }
+
+    // view one student
+    function getStudent(uint256 _id) external view returns (uint256 id, string memory name, uint8 age, string memory course) {
+        require(studentsExists(_id), "Not found");
+        Student storage s = students[indexOf[_id]];
         return (s.id, s.name, s.age, s.course);
     }
 
-    // Fallback function to accept ether
-    fallback() external payable {
-        // Do nothing, just accept ETH
+    // list all student ids
+    function listStudentIds() external view returns (uint256[] memory) {
+        uint256 n = students.length;
+        if (n <= 1) return new uint256;
+        uint256[] memory ids = new uint256[](n - 1);
+        for (uint256 i = 1; i < n; i++) ids[i - 1] = students[i].id;
+        return ids;
     }
 
+    // helper
+    function studentsExists(uint256 _id) public view returns (bool) {
+        uint256 idx = indexOf[_id];
+        if (idx == 0) return false;
+        return students[idx].exists;
+    }
+
+    // Allow contract to receive ETH via `send`/`transfer`/`call` without data
     receive() external payable {
-        // Optional: handle plain ETH transfers
+        emit Received(msg.sender, msg.value);
     }
 
-    // Function to get contract balance
-    function getContractBalance() public view returns (uint256) {
-        return address(this).balance;
+    // Fallback for calls with data or that do not match any function
+    fallback() external payable {
+        emit FallbackCalled(msg.sender, msg.value, msg.data);
     }
 }
