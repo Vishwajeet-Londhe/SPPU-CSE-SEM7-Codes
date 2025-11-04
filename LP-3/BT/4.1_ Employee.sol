@@ -1,63 +1,55 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-contract EmployeeRecords {
-    address public owner;
-
+contract EmployeeManager {
     struct Employee {
         uint256 id;
         string name;
         uint8 age;
         string department;
-        uint256 salary; // in wei (or smallest currency unit)
-        bool exists;
+        uint256 salary;
     }
 
-    Employee[] private employees;              // dynamic array
-    mapping(uint256 => uint256) private idxOf; // id -> index in employees (1-based)
+    Employee[] private employees;
+    mapping(uint256 => uint256) private idx;
+    uint256 public employeeCount;
+
+    uint256 public depositsCount;
+    uint256 public lastDepositAmount;
+    address public lastSender;
 
     event EmployeeAdded(uint256 indexed id, string name);
     event EmployeeUpdated(uint256 indexed id);
     event EmployeeRemoved(uint256 indexed id);
     event Received(address indexed from, uint256 amount);
-    event FallbackCalled(address indexed from, uint256 value, bytes data);
-
-    modifier onlyOwner() {
-        require(msg.sender == owner, "Only owner");
-        _;
-    }
+    event FallbackCalled(address indexed from, uint256 amount, bytes data);
 
     constructor() {
-        owner = msg.sender;
-        employees.push(Employee(0,"",0,"",0,false)); // sentinel for 1-based indexing
+        employeeCount = 0;
     }
 
-    // Add employee (owner)
-    function addEmployee(
-        uint256 _id,
-        string calldata _name,
-        uint8 _age,
-        string calldata _department,
-        uint256 _salary
-    ) external onlyOwner {
-        require(_id != 0, "Invalid id");
-        require(!employeeExists(_id), "Exists");
-        employees.push(Employee(_id, _name, _age, _department, _salary, true));
-        idxOf[_id] = employees.length - 1;
-        emit EmployeeAdded(_id, _name);
+    function addEmployee(string calldata _name, uint8 _age, string calldata _department, uint256 _salary) external {
+        employeeCount += 1;
+        uint256 newId = employeeCount;
+        employees.push(Employee({id: newId, name: _name, age: _age, department: _department, salary: _salary}));
+        idx[newId] = employees.length;
+        emit EmployeeAdded(newId, _name);
     }
 
-    // Update employee (owner)
-    function updateEmployee(
-        uint256 _id,
-        string calldata _name,
-        uint8 _age,
-        string calldata _department,
-        uint256 _salary
-    ) external onlyOwner {
-        require(employeeExists(_id), "Not found");
-        uint256 i = idxOf[_id];
-        Employee storage e = employees[i];
+    function getEmployee(uint256 _id) public view returns (Employee memory) {
+        uint256 i = idx[_id];
+        require(i != 0, "Employee not found");
+        return employees[i - 1];
+    }
+
+    function getAllEmployees() external view returns (Employee[] memory) {
+        return employees;
+    }
+
+    function updateEmployee(uint256 _id, string calldata _name, uint8 _age, string calldata _department, uint256 _salary) external {
+        uint256 i = idx[_id];
+        require(i != 0, "Employee not found");
+        Employee storage e = employees[i - 1];
         e.name = _name;
         e.age = _age;
         e.department = _department;
@@ -65,50 +57,44 @@ contract EmployeeRecords {
         emit EmployeeUpdated(_id);
     }
 
-    // Remove employee (owner) — swap & pop
-    function removeEmployee(uint256 _id) external onlyOwner {
-        require(employeeExists(_id), "Not found");
-        uint256 i = idxOf[_id];
-        uint256 last = employees.length - 1;
-        if (i != last) {
-            Employee storage lastEmp = employees[last];
-            employees[i] = lastEmp;
-            idxOf[lastEmp.id] = i;
+    function removeEmployee(uint256 _id) external {
+        uint256 i = idx[_id];
+        require(i != 0, "Employee not found");
+        uint256 arrayIndex = i - 1;
+        uint256 lastIndex = employees.length - 1;
+        if (arrayIndex != lastIndex) {
+            Employee memory lastEmployee = employees[lastIndex];
+            employees[arrayIndex] = lastEmployee;
+            idx[lastEmployee.id] = arrayIndex + 1;
         }
         employees.pop();
-        delete idxOf[_id];
+        idx[_id] = 0;
         emit EmployeeRemoved(_id);
     }
 
-    // View employee
-    function getEmployee(uint256 _id) external view returns (uint256 id, string memory name, uint8 age, string memory department, uint256 salary) {
-        require(employeeExists(_id), "Not found");
-        Employee storage e = employees[idxOf[_id]];
-        return (e.id, e.name, e.age, e.department, e.salary);
-    }
-
-    // List all employee ids
-    function listEmployeeIds() external view returns (uint256[] memory) {
-        uint256 n = employees.length;
-        if (n <= 1) return new uint256;
-        uint256[] memory ids = new uint256[](n - 1);
-        for (uint256 i = 1; i < n; i++) ids[i - 1] = employees[i].id;
-        return ids;
-    }
-
-    function employeeExists(uint256 _id) public view returns (bool) {
-        uint256 i = idxOf[_id];
-        if (i == 0) return false;
-        return employees[i].exists;
-    }
-
-    // Accept plain ETH transfers
-    receive() external payable {
+    function deposit() external payable {
+        require(msg.value > 0, "Send ETH");
+        depositsCount += 1;
+        lastDepositAmount = msg.value;
+        lastSender = msg.sender;
         emit Received(msg.sender, msg.value);
     }
 
-    // Fallback for unknown calls
+    receive() external payable {
+        depositsCount += 1;
+        lastDepositAmount = msg.value;
+        lastSender = msg.sender;
+        emit Received(msg.sender, msg.value);
+    }
+
     fallback() external payable {
+        depositsCount += 1;
+        lastDepositAmount = msg.value;
+        lastSender = msg.sender;
         emit FallbackCalled(msg.sender, msg.value, msg.data);
+    }
+
+    function getEmployeesLength() external view returns (uint256) {
+        return employees.length;
     }
 }
